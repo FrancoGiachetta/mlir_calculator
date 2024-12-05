@@ -1,0 +1,9 @@
+[package]
+name = "mlir_calculator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+llvm-sys = "191.0.0"
+melior = { version = "=0.19.0", features = ["ods-dialects"] }
+nom = "7.1.3"
