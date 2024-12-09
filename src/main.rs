@@ -1,12 +1,8 @@
 use std::{error, io::Read, path::PathBuf, str::FromStr};
 
-mod lexer;
-mod tokens;
-use lexer::Lexer;
-
 fn main() -> Result<(), Box<dyn error::Error>> {
     let args: Vec<_> = std::env::args().collect();
-    let file_path = PathBuf::from_str(&args[0])?;
+    let file_path = PathBuf::from_str(&args[1])?;
 
     run_file(file_path)?;
 
@@ -19,10 +15,9 @@ fn run_file(file: PathBuf) -> Result<(), Box<dyn error::Error>> {
 
     reader.read_to_string(&mut source)?;
 
-    let mut lexer = Lexer::new(&source);
-    lexer.scan_tokens();
+    let ast = mlir_calculator::ast::parse(&source);
 
-    dbg!(lexer.tokens());
+    dbg!(ast);
 
     Ok(())
 }

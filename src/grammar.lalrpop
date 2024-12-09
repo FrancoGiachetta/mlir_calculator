@@ -1,0 +1,53 @@
+use crate::ast::{Expr, Opcode};
+use std::str::FromStr;
+
+grammar;
+
+extern {
+	type Location = usize;
+	type Error = LexicalError;
+
+	enum Token {
+		"(" => Token::LeftParen,
+		")" => Token::RightParen,
+		"+" => Token::Add,
+		"-" => Token::Sub,
+		"*" => Token::Mul,
+		"/" => Token::Div,
+		"^" => Token::Pow,
+		"int" => Token::Num(<f64>)
+	}
+}
+
+pub S: Vec<Expr> = {
+	<exprs:Expr*> => exprs
+}
+
+pub Expr: Box<Expr> = {
+	#[precedence(level="1")]
+	Term,
+	Binary,
+	Unary,
+}
+
+pub Binary: Box<Expr> = {
+	#[precedence(level="2")] #[assoc(side="left")]
+	 <lhs:Expr> <op:"^"> <rhs:Expr> => Box::new(Expr::BinaryOp{lhs,op,rhs}),
+
+	#[precedence(level="3")] // #[assoc(side="left")]
+	<lhs:Expr> <op:"*"> <rhs:Expr> => Box::new(Expr::BinaryOp{lhs,op,rhs}),
+	<lhs:Expr> <op:"/"> <rhs:Expr> => Box::new(Expr::BinaryOp{lhs,op,rhs}),
+
+	#[precedence(level="4")] // #[assoc(side="left")]
+	<lhs:Expr> <op:"+"> <rhs:Expr> => Box::new(Expr::BinaryOp{lhs,op,rhs}),
+	<lhs:Expr> <op:"-"> <rhs:Expr> => Box::new(Expr::BinaryOp{lhs,op,rhs}),
+}
+
+pub Unary: Box<Expr> = {
+	<op:"-"> <shs:Expr> => Box::new(Expr::Unary {op,shs})
+}
+
+pub Term: Box<Expr> = {
+	<num:"int"> => Box::new(Expr::Num(val)),
+	"(" <e:Expr> ")" => e
+}
